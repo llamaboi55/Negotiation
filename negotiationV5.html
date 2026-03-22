@@ -303,10 +303,15 @@ input:checked+.toggle-slider:before{transform:translateX(21px);background:var(--
   transform:translateY(30px) scale(0.97);
   transition:transform 0.5s cubic-bezier(0.4,0,0.2,1),opacity 0.5s;
   opacity:0;
+  box-shadow:0 0 0 rgba(0,212,255,0);
 }
-#dossier-intro-box.visible{transform:translateY(0) scale(1);opacity:1}
+#dossier-intro-box.visible{transform:translateY(0) scale(1);opacity:1;animation:dossierPulse 1.8s ease-in-out infinite}
 #dossier-intro-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,transparent,var(--accent2),transparent)}
+@keyframes dossierPulse{
+  0%,100%{box-shadow:0 0 16px rgba(255,51,102,0.14),0 0 40px rgba(0,212,255,0.08)}
+  50%{box-shadow:0 0 28px rgba(255,51,102,0.24),0 0 56px rgba(0,212,255,0.14)}
+}
 .dossier-intro-header{
   padding:0.9rem 1.1rem;border-bottom:1px solid var(--border);
   display:flex;justify-content:space-between;align-items:center;
@@ -877,6 +882,8 @@ let masterGain, ambientGain, uiGain, musicGain;
 let currentAmbientSource = null;
 let currentMusicState = 'neutral';
 let musicOscillators = [];
+let staticNoiseBuffer = null;
+let lastUrgentTickSecond = null;
 
 function getAC() {
   if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
@@ -886,10 +893,16 @@ function getAC() {
 function initAudio() {
   try {
     const ac = getAC();
-    masterGain = ac.createGain(); masterGain.gain.value = 0.7; masterGain.connect(ac.destination);
-    ambientGain = ac.createGain(); ambientGain.gain.value = 0.07; ambientGain.connect(masterGain);
-    uiGain = ac.createGain(); uiGain.gain.value = 0.4; uiGain.connect(masterGain);
-    musicGain = ac.createGain(); musicGain.gain.value = 0.055; musicGain.connect(masterGain);
+    const compressor = ac.createDynamicsCompressor();
+    compressor.threshold.value = -26;
+    compressor.knee.value = 18;
+    compressor.ratio.value = 7;
+    compressor.attack.value = 0.003;
+    compressor.release.value = 0.25;
+    masterGain = ac.createGain(); masterGain.gain.value = 0.95; masterGain.connect(compressor); compressor.connect(ac.destination);
+    ambientGain = ac.createGain(); ambientGain.gain.value = 0.1; ambientGain.connect(masterGain);
+    uiGain = ac.createGain(); uiGain.gain.value = 0.72; uiGain.connect(masterGain);
+    musicGain = ac.createGain(); musicGain.gain.value = 0.085; musicGain.connect(masterGain);
     startAmbient(); startMusicLayer('neutral');
   } catch(e) {}
 }
@@ -907,18 +920,25 @@ function playTone(freq, dur, type='sine', vol=0.28, delay=0) {
 function playStaticBurst(vol=0.28, dur=0.14) {
   try {
     const ac = getAC(); if (!uiGain) return;
-    const buf = ac.createBuffer(1, ac.sampleRate*dur, ac.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*0.8;
+    if (!staticNoiseBuffer || staticNoiseBuffer.length !== Math.floor(ac.sampleRate*0.5)) {
+      staticNoiseBuffer = ac.createBuffer(1, ac.sampleRate*0.5, ac.sampleRate);
+      const d = staticNoiseBuffer.getChannelData(0);
+      for (let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*0.8;
+    }
     const src = ac.createBufferSource(), g = ac.createGain();
-    src.buffer = buf;
+    src.buffer = staticNoiseBuffer;
+    src.playbackRate.value = Math.max(0.45, Math.min(2.2, 0.5/dur));
     g.gain.setValueAtTime(vol, ac.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+dur);
     src.connect(g); g.connect(uiGain);
     src.start(); src.stop(ac.currentTime+dur+0.05);
   } catch(e) {}
 }
-function playSend() { playTone(800,0.04,'square',0.13); playTone(1200,0.06,'square',0.07,0.04); }
+function playSend() {
+  playTone(660,0.06,'square',0.2);
+  playTone(980,0.08,'triangle',0.13,0.03);
+  playTone(1440,0.06,'square',0.09,0.08);
+}
 function playStrike() {
   try {
     const ac = getAC(); if (!uiGain) return;
@@ -931,16 +951,48 @@ function playStrike() {
   playStaticBurst(0.38);
 }
 function playProgressTone() {
-  playTone(440,0.18,'sine',0.11); playTone(660,0.25,'sine',0.08,0.14); playTone(880,0.35,'sine',0.05,0.28);
+  playTone(380,0.13,'triangle',0.13); playTone(540,0.18,'triangle',0.11,0.1); playTone(760,0.24,'sine',0.09,0.2);
 }
-function playIntelTone() { playTone(523,0.13,'sine',0.14); playTone(659,0.18,'sine',0.11,0.11); }
-function playSilenceTone() { playTone(220,0.75,'sine',0.035); }
+function playIntelTone() { playTone(620,0.12,'triangle',0.2); playTone(930,0.2,'sine',0.15,0.08); }
+function playSilenceTone() { playTone(188,0.8,'sine',0.05); }
 function playLeverageTone(type) {
-  if (type==='info') { playTone(440,0.1,'sine',0.18); playTone(550,0.18,'sine',0.13,0.1); }
-  else if (type==='risk') { playTone(150,0.14,'sawtooth',0.22); playTone(100,0.28,'square',0.14,0.11); }
-  else { playTone(330,0.11,'triangle',0.18); playTone(440,0.14,'triangle',0.13,0.1); }
+  if (type==='info') {
+    playTone(440,0.09,'sine',0.17); playTone(740,0.14,'triangle',0.13,0.07); playTone(980,0.18,'sine',0.1,0.14);
+  } else if (type==='risk') {
+    playTone(145,0.15,'sawtooth',0.26); playTone(110,0.25,'square',0.18,0.1); playStaticBurst(0.18,0.09);
+  } else {
+    playTone(280,0.11,'triangle',0.17); playTone(360,0.16,'triangle',0.13,0.08); playTone(520,0.12,'sine',0.1,0.15);
+  }
 }
 function playContactDeploy(type) { playLeverageTone(type); }
+function playPanelSlide(direction='left') {
+  const base = direction==='right' ? 520 : 420;
+  playTone(base,0.07,'triangle',0.12);
+  playTone(base+120,0.06,'sine',0.08,0.04);
+}
+function playDossierIncoming() {
+  playStaticBurst(0.22,0.12);
+  playTone(180,0.35,'sawtooth',0.15,0.04);
+  playTone(240,0.42,'sawtooth',0.13,0.12);
+  playTone(1200,0.08,'square',0.16,0.45);
+}
+function playCountdownUrgentTick(second) {
+  if (lastUrgentTickSecond===second) return;
+  lastUrgentTickSecond = second;
+  const isCritical = second<=10;
+  playTone(isCritical?930:720,0.05,'square',isCritical?0.2:0.14);
+  if (isCritical) playTone(560,0.07,'sawtooth',0.12,0.03);
+}
+function playSuccessSting() {
+  playTone(440,0.18,'triangle',0.2);
+  playTone(660,0.22,'sine',0.18,0.09);
+  playTone(980,0.35,'sine',0.15,0.19);
+}
+function playFailureSting() {
+  playTone(210,0.2,'sawtooth',0.24);
+  playTone(165,0.25,'square',0.2,0.08);
+  playStaticBurst(0.24,0.14);
+}
 function playTargetVoice(mood) {
   try {
     if (!mood) return; const m = mood.toLowerCase();
@@ -1312,12 +1364,14 @@ function openContacts() {
   if (state.contactsOpen) return;
   state.contactsOpen = true;
   document.getElementById('contacts-tab').classList.remove('closed');
+  playPanelSlide('left');
   applyMainContentOffset();
 }
 function closeContacts() {
   if (state.contactsPinned) return;
   state.contactsOpen = false;
   document.getElementById('contacts-tab').classList.add('closed');
+  playPanelSlide('left');
   applyMainContentOffset();
 }
 function toggleContacts() { state.contactsOpen ? closeContacts() : openContacts(); }
@@ -1333,12 +1387,14 @@ function openDossier() {
   if (state.dossierOpen) return;
   state.dossierOpen = true;
   document.getElementById('dossier-tab').classList.remove('closed');
+  playPanelSlide('right');
   applyMainContentOffset();
 }
 function closeDossier() {
   if (state.dossierPinned) return;
   state.dossierOpen = false;
   document.getElementById('dossier-tab').classList.add('closed');
+  playPanelSlide('right');
   applyMainContentOffset();
 }
 function toggleDossier() { state.dossierOpen ? closeDossier() : openDossier(); }
@@ -1372,6 +1428,7 @@ window.addEventListener('resize', applyMainContentOffset);
 ═══════════════════════════════════════════ */
 function showDossierIntro(data) {
   return new Promise(resolve => {
+    const DOSSIER_INTRO_HOLD_MS = 5000;
     const diffColor = data.difficulty==='Extreme'?'var(--accent2)'
       :data.difficulty==='Hard'?'var(--gold)'
       :data.difficulty==='Medium'?'var(--accent)':'var(--accent3)';
@@ -1415,6 +1472,7 @@ function showDossierIntro(data) {
     requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{ box.classList.add('visible'); });
     });
+    playDossierIncoming();
 
     setTimeout(() => {
       // Animate dossier flying to the right panel
@@ -1438,7 +1496,7 @@ function showDossierIntro(data) {
         openDossier();
         resolve();
       }, 620);
-    }, 1400);
+    }, DOSSIER_INTRO_HOLD_MS);
   });
 }
 
@@ -1460,6 +1518,7 @@ function addStrike() {
 async function triggerStrikeLoss() {
   state.lost=true; stopCountdown();
   document.getElementById('input-area').style.display='none';
+  playFailureSting();
   await new Promise(r=>setTimeout(r,700));
   const feedback=await generateFailFeedback();
   const sa=document.getElementById('success-area');
@@ -1479,7 +1538,7 @@ async function triggerStrikeLoss() {
 }
 function triggerJailbreakLoss() {
   if (state.lost) return; state.lost=true; stopCountdown();
-  playJailbreakAlarm(); triggerJailbreakFlash();
+  playJailbreakAlarm(); playFailureSting(); triggerJailbreakFlash();
   document.getElementById('input-area').style.display='none';
   setTimeout(()=>{
     const sa=document.getElementById('success-area');
@@ -1589,20 +1648,24 @@ function renderOptimalZone(){
 ═══════════════════════════════════════════ */
 function startCountdown(seconds=300){
   state.countdown=seconds; const b=document.getElementById('countdown-badge'); if(b)b.style.display='';
+  lastUrgentTickSecond = null;
   updateCountdownDisplay();
   state.countdownInterval=setInterval(()=>{state.countdown--;updateCountdownDisplay();if(state.countdown<=0){clearInterval(state.countdownInterval);triggerTimeOut();}},1000);
 }
-function stopCountdown(){clearInterval(state.countdownInterval);const b=document.getElementById('countdown-badge');if(b)b.style.display='none';}
+function stopCountdown(){clearInterval(state.countdownInterval);lastUrgentTickSecond=null;const b=document.getElementById('countdown-badge');if(b)b.style.display='none';}
 function extendCountdown(s=60){state.countdown+=s;addSystemMsg(`⏱ Clock extended by ${s}s.`,'');}
 function updateCountdownDisplay(){
   const b=document.getElementById('countdown-badge'); if(!b) return;
   const m=Math.floor(state.countdown/60),s=state.countdown%60;
   b.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   b.classList.toggle('urgent',state.countdown<=30);
+  if (state.countdown<=30 && (state.countdown<=10 || state.countdown%5===0)) {
+    playCountdownUrgentTick(state.countdown);
+  }
 }
 async function triggerTimeOut(){
   if(state.won||state.lost) return; state.lost=true;
-  document.getElementById('input-area').style.display='none'; playStrike();
+  document.getElementById('input-area').style.display='none'; playStrike(); playFailureSting();
   const feedback=await generateFailFeedback();
   const sa=document.getElementById('success-area');
   sa.innerHTML=`<div class="fail-card">
@@ -2265,7 +2328,7 @@ Return ONLY valid JSON:
 async function handleWin(){
   state.won=true; stopCountdown();
   document.getElementById('input-area').style.display='none';
-  playProgressTone(); setTimeout(playProgressTone,420);
+  playSuccessSting(); setTimeout(playProgressTone,380);
   await new Promise(r=>setTimeout(r,800));
   const styleTag=computeStyleTag();
   const aar=await generateAAR(styleTag);
