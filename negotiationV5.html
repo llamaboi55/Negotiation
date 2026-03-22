@@ -6,7 +6,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>NEGOTIATION</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
@@ -14,9 +14,10 @@
   --text:#c8d8e8;--dim:#4a5a6a;--gold:#ffd700;--border:#1a2a3a;
   --glow:0 0 20px rgba(0,212,255,0.3);--glow2:0 0 20px rgba(255,51,102,0.3);
   --contacts-w:290px;--dossier-w:310px;--header-h:58px;--mood-color:#00d4ff;
+  --base-font-size:16px;
 }
 html{height:100%;-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:16px;
+body{background:var(--bg);color:var(--text);font-family:'Inter','Rajdhani',sans-serif;font-size:var(--base-font-size);
   overflow:hidden;height:100%;width:100vw;position:fixed;overscroll-behavior:none}
 .scanline{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:9999;
   background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px)}
@@ -178,17 +179,17 @@ input:checked+.toggle-slider:before{transform:translateX(21px);background:var(--
 .panel-handle-strip.right-strip{ right:0; }
 
 .panel-handle-btn{
-  width:22px;background:rgba(10,15,30,0.94);
+  width:30px;background:rgba(10,15,30,0.94);
   border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
   cursor:pointer;transition:background 0.2s,border-color 0.2s;
-  height:76px;touch-action:manipulation;
+  height:122px;touch-action:manipulation;
   position:relative;z-index:2;
 }
 .left-strip .panel-handle-btn{border-left:none;border-radius:0 4px 4px 0}
 .right-strip .panel-handle-btn{border-right:none;border-radius:4px 0 0 4px}
 .panel-handle-btn:hover,.panel-handle-btn:active{
   background:rgba(0,212,255,0.1);border-color:rgba(0,212,255,0.4)}
-.handle-icon{font-family:'Share Tech Mono',monospace;font-size:0.5rem;
+.handle-icon{font-family:'Share Tech Mono',monospace;font-size:0.64rem;
   color:var(--accent);writing-mode:vertical-rl;letter-spacing:0.15em;pointer-events:none}
 
 /* sliding panel content */
@@ -234,7 +235,7 @@ input:checked+.toggle-slider:before{transform:translateX(21px);background:var(--
   display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .panel-label{font-family:'Orbitron',monospace;font-size:0.62rem;
   color:var(--dim);letter-spacing:0.28em;margin-bottom:0.2rem}
-.panel-title{font-size:0.96rem;font-weight:700;color:var(--text)}
+.panel-title{font-size:1.1rem;font-weight:700;color:var(--text)}
 .pin-btn{background:none;border:1px solid var(--border);color:var(--dim);
   cursor:pointer;font-size:0.68rem;padding:0.2rem 0.42rem;transition:all 0.2s;
   font-family:'Share Tech Mono',monospace;letter-spacing:0.05em;touch-action:manipulation}
@@ -574,11 +575,19 @@ input:checked+.toggle-slider:before{transform:translateX(21px);background:var(--
 @media(max-width:700px){
   :root{--contacts-w:250px;--dossier-w:260px;--header-h:50px}
   .msg-bubble{max-width:88%}
+  .panel-handle-btn{width:24px;height:92px}
+  .handle-icon{font-size:0.53rem}
 }
 @media(max-width:400px){
   :root{--contacts-w:230px;--dossier-w:240px}
   .msg-avatar{display:none}
   .msg-bubble{max-width:96%}
+}
+@media(min-width:1200px){
+  :root{--base-font-size:17px}
+}
+@media(min-width:1700px){
+  :root{--base-font-size:18px}
 }
 @media(hover:none){
   .btn:hover{background:transparent;box-shadow:none;transform:none}
@@ -832,6 +841,34 @@ const SINFUL_HOOKS = [
   'hidden identity','forged credentials','assault cover-up','money laundering'
 ];
 
+const TARGET_POOLS = {
+  countries: [
+    { country:'Nigeria', location:'Lagos, Nigeria', names:['Amina Okafor','Chinedu Balogun','Temitope Adeyemi','Ifeoma Nwosu'] },
+    { country:'Japan', location:'Osaka, Japan', names:['Haruka Sato','Daichi Mori','Aoi Nakamura','Ren Takahashi'] },
+    { country:'Brazil', location:'Recife, Brazil', names:['Luana Pereira','Mateus Costa','Rafaela Souza','João Mendes'] },
+    { country:'India', location:'Mumbai, India', names:['Ananya Rao','Rohan Kapoor','Meera Iyer','Arjun Malhotra'] },
+    { country:'Egypt', location:'Alexandria, Egypt', names:['Yasmine El-Sayed','Karim Nassar','Salma Fathi','Omar El-Masry'] },
+    { country:'Poland', location:'Gdańsk, Poland', names:['Katarzyna Nowak','Michał Zieliński','Alicja Kowalczyk','Piotr Wójcik'] }
+  ],
+  ages:[27,31,34,38,42,47,53,59],
+  occupations:[
+    'shipping manifest auditor','private crematorium administrator','high-stakes debt mediator',
+    'cargo insurance fraud examiner','underground archival conservator','offshore wind procurement broker',
+    'night-shift emergency dispatcher','diaspora remittance compliance officer'
+  ],
+  religions:['Christianity','Islam','Hinduism','Buddhism','Judaism','Sikhism','Traditional beliefs','Non-religious'],
+  contactTemplates:[
+    {id:'informant_1',name:'Silas Ward',role:'Port Intelligence Broker',tag:'INTEL',type:'info',desc:'You reach a broker who sells ship whispers by the kilogram. He trades favors, not loyalty.',personality:'Quiet, clipped, allergic to small talk.',canExtendClock:false},
+    {id:'risk_1',name:'Nadia Voss',role:'Reputation Enforcer',tag:'PRESSURE',type:'risk',desc:'She can stain a name before sunrise and make it look like weather.',personality:'Cold humor, zero patience for indecision.',canExtendClock:false},
+    {id:'util_1',name:'Kian Mercer',role:'Behavioral Analyst',tag:'PSYCH',type:'util',desc:'He maps tells, pauses, and breathing slips like a cartographer.',personality:'Methodical, curious, unnervingly calm.',canExtendClock:true},
+    {id:'info_2',name:'Priya Sen',role:'Telecom Forensics Specialist',tag:'SIGNAL',type:'info',desc:'She turns metadata into motive and motive into leverage.',personality:'Precise and dry, with forensic obsession.',canExtendClock:false},
+    {id:'risk_2',name:'Gabriel Roche',role:'Union Fixer',tag:'FORCE',type:'risk',desc:'He knows exactly which pressure point collapses a stubborn room.',personality:'Gruff, blunt, and results-driven.',canExtendClock:false},
+    {id:'util_2',name:'Mara Quinn',role:'Logistics Ghost',tag:'SUPPORT',type:'util',desc:'She reroutes people, paper trails, and expectations without leaving fingerprints.',personality:'Efficient, polite, impossible to read.',canExtendClock:true},
+    {id:'info_3',name:'Tariq Haleem',role:'Court Records Diver',tag:'FILES',type:'info',desc:'He finds what filing systems hope you miss.',personality:'Fast-talking and irreverent.',canExtendClock:false},
+    {id:'util_3',name:'Elena Drago',role:'Backchannel Diplomat',tag:'CHANNEL',type:'util',desc:'She can reopen closed doors if you give her one believable angle.',personality:'Measured voice, very strategic.',canExtendClock:true}
+  ]
+};
+
 /* ═══════════════════════════════════════════
    AUDIO ENGINE
 ═══════════════════════════════════════════ */
@@ -1078,6 +1115,26 @@ function detectJailbreak(t) { return JP.some(p=>p.test(t)); }
 function hashStr(s) {
   let h=5381; for (let i=0;i<s.length;i++) h=((h<<5)+h)+s.charCodeAt(i); return h>>>0;
 }
+function secureRandomInt(max) {
+  if (max <= 0) return 0;
+  const arr = new Uint32Array(1);
+  const limit = Math.floor(0x100000000 / max) * max;
+  let value = 0;
+  do {
+    crypto.getRandomValues(arr);
+    value = arr[0];
+  } while (value >= limit);
+  return value % max;
+}
+function pickRandom(list) { return list[secureRandomInt(list.length)]; }
+function shuffleSecure(list) {
+  const copy=[...list];
+  for (let i=copy.length-1;i>0;i--){
+    const j=secureRandomInt(i+1);
+    [copy[i],copy[j]]=[copy[j],copy[i]];
+  }
+  return copy;
+}
 function normalise(s) {
   return s.toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim().split(' ').sort().join(' ');
 }
@@ -1158,7 +1215,8 @@ function applyMainContentOffset() {
   if (!mc) return;
   const contactsW = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--contacts-w')) || 290;
   const dossierW  = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--dossier-w'))  || 310;
-  const handleW   = 22; // always-visible handle strip width
+  const handleEl  = document.querySelector('.panel-handle-btn');
+  const handleW   = handleEl ? handleEl.getBoundingClientRect().width : 30;
   const isMobile  = window.innerWidth <= 700;
 
   let left  = handleW; // contacts handle always visible
@@ -1328,9 +1386,15 @@ function showDossierIntro(data) {
           <span class="dif-label">OCCUPATION</span><span class="dif-val">${data.occupation}</span>
         </div>
         <div class="dossier-intro-field">
-          <span class="dif-label">LOCATION</span><span class="dif-val">${data.location}</span>
+          <span class="dif-label">COUNTRY</span><span class="dif-val">${data.countryOfOrigin||'Unknown'}</span>
         </div>
         <div class="dossier-intro-field">
+          <span class="dif-label">RELIGION</span><span class="dif-val">${data.religion||'Undisclosed'}</span>
+        </div>
+        <div class="dossier-intro-field">
+          <span class="dif-label">LOCATION</span><span class="dif-val">${data.location}</span>
+        </div>
+        <div class="dossier-intro-field" style="min-width:88px">
           <span class="dif-label">DIFFICULTY</span>
           <span class="dif-val" style="color:${diffColor}">${data.difficulty}</span>
         </div>
@@ -1340,10 +1404,8 @@ function showDossierIntro(data) {
         <div class="dossier-intro-file">${data.fileText}</div>
       </div>
       <div class="dossier-intro-goal">${data.goal}</div>
-      <div class="btn-group" style="justify-content:center;padding-bottom:0.5rem">
-        <button class="btn success" id="intro-begin-btn" style="width:100%;max-width:320px">
-          INITIATE CONTACT
-        </button>
+      <div class="dossier-intro-section-text" style="color:var(--dim);margin-top:0.7rem">
+        Initializing secure channel...
       </div>`;
 
     const overlay = document.getElementById('dossier-intro-overlay');
@@ -1354,7 +1416,7 @@ function showDossierIntro(data) {
       requestAnimationFrame(()=>{ box.classList.add('visible'); });
     });
 
-    document.getElementById('intro-begin-btn').onclick = () => {
+    setTimeout(() => {
       // Animate dossier flying to the right panel
       box.style.transition = 'transform 0.6s cubic-bezier(0.4,0,0.2,1), opacity 0.5s';
       const rightEdge = window.innerWidth;
@@ -1376,7 +1438,7 @@ function showDossierIntro(data) {
         openDossier();
         resolve();
       }, 620);
-    };
+    }, 1400);
   });
 }
 
@@ -1608,6 +1670,8 @@ function buildDossierPanel(data){
       <div class="dossier-pmeta">
         <div class="dossier-pfield"><span class="field-plabel">AGE</span><span class="field-pval">${data.age}</span></div>
         <div class="dossier-pfield"><span class="field-plabel">OCC.</span><span class="field-pval">${data.occupation}</span></div>
+        <div class="dossier-pfield"><span class="field-plabel">ORIGIN</span><span class="field-pval">${data.countryOfOrigin||'Unknown'}</span></div>
+        <div class="dossier-pfield"><span class="field-plabel">REL.</span><span class="field-pval">${data.religion||'Undisclosed'}</span></div>
         <div class="dossier-pfield"><span class="field-plabel">LOC.</span><span class="field-pval">${data.location}</span></div>
         <div class="dossier-pfield"><span class="field-plabel">DIFF.</span><span class="field-pval" style="color:${diffColor}">${data.difficulty}</span></div>
       </div>
@@ -1693,29 +1757,10 @@ function renderContactsList(){
   });
 }
 async function generateContacts(){
-  const r=await groqJSON([{
-    role:'system',
-    content:`Generate 6 morally ambiguous contacts for a noir negotiation thriller.
-Types: "info" (intel/surveillance), "risk" (intimidation/coercion), "util" (logistics/psychology).
-Each distinct with a sinful backstory hint. Make them feel real and dangerous.
-Return ONLY valid JSON:
-{"contacts":[{
-  "id":string,
-  "name":string,
-  "role":string (2-5 words),
-  "tag":string (1-2 words uppercase),
-  "type":"info"|"risk"|"util",
-  "desc":string (2-3 sentences noir second-person),
-  "personality":string (1-2 sentences, quirk/attitude),
-  "canExtendClock":boolean
-}]}`
-  },{role:'user',content:'Generate the contact network for this mission.'}],1100);
-  if(r&&Array.isArray(r.contacts)&&r.contacts.length>0){
-    state.contacts=r.contacts; state.contactsReady=true; renderContactsList();
-  } else {
-    document.getElementById('contacts-list').innerHTML=
-      `<div class="contacts-loading" style="color:var(--accent2)">NETWORK OFFLINE</div>`;
-  }
+  const randomized = shuffleSecure(TARGET_POOLS.contactTemplates).slice(0,6);
+  state.contacts = randomized.map((c, idx) => ({...c, id:`${c.id}_${idx+1}`}));
+  state.contactsReady=true;
+  renderContactsList();
 }
 
 function openContactModal(contact){
@@ -1733,7 +1778,7 @@ function openContactModal(contact){
       <input class="modal-input" id="contact-instruction"
         placeholder="What do you want them to do?" />
       <button class="deploy-btn type-${contact.type}" onclick="deployContact()">
-        DEPLOY ${contact.name.split(' ')[0].toUpperCase()}
+        DEPLOY ${contact.name.toUpperCase()}
       </button>
     </div>`;
   document.getElementById('contact-modal').classList.add('open');
@@ -1957,6 +2002,18 @@ Return ONLY valid JSON:
 /* ═══════════════════════════════════════════
    LOAD TARGET
 ═══════════════════════════════════════════ */
+function buildRandomTargetProfile(){
+  const country = pickRandom(TARGET_POOLS.countries);
+  return {
+    countryOfOrigin:country.country,
+    location:country.location,
+    name:pickRandom(country.names),
+    age:pickRandom(TARGET_POOLS.ages),
+    occupation:pickRandom(TARGET_POOLS.occupations),
+    religion:pickRandom(TARGET_POOLS.religions)
+  };
+}
+
 async function loadTarget(){
   document.getElementById('dossier-inner-content').innerHTML=`
     <div class="contacts-loading">RETRIEVING FILE<br>
@@ -1971,27 +2028,29 @@ async function loadTarget(){
       </span>
     </div>`;
 
-  const sinHook=SINFUL_HOOKS[Math.floor(Math.random()*SINFUL_HOOKS.length)];
+  const sinHook=pickRandom(SINFUL_HOOKS);
+  const seededProfile=buildRandomTargetProfile();
   const prompt=[{
     role:'system',
     content:`You are generating a classified dossier for a negotiation thriller game.
-Create a genuinely surprising, fully original human target.
-CREATIVE RULES:
-- Pull from the full breadth of human experience: any country, culture, class, age, walk of life.
-- Do NOT default to doctors, professors, scientists, politicians, or government officials.
-- Do NOT make them white or Western by default — actively vary ethnicity and nationality.
-- Occupation must be specific and unexpected — not a stock thriller role.
-- Personality must be psychologically real and contradictory.
-- The hidden clue MUST incorporate this sinful element: "${sinHook}". Make it emotionally precise and morally uncomfortable.
-- The goal must feel genuinely difficult and ethically ambiguous.
-- The name must feel authentic to their actual nationality.
-- pressureOptLow and pressureOptHigh define this target's unique optimal pressure zone.
+Use these fixed profile values exactly as provided:
+Name: ${seededProfile.name}
+Age: ${seededProfile.age}
+Occupation: ${seededProfile.occupation}
+Country of origin: ${seededProfile.countryOfOrigin}
+Location: ${seededProfile.location}
+Religion: ${seededProfile.religion}
+Do not change any fixed profile value.
+The hidden clue MUST incorporate this sinful element: "${sinHook}". Make it emotionally precise and morally uncomfortable.
+Goal must remain ethically ambiguous.
 Return ONLY valid JSON:
 {
-  "name":string,
-  "age":number,
-  "occupation":string,
-  "location":string,
+  "name":"${seededProfile.name}",
+  "age":${seededProfile.age},
+  "occupation":"${seededProfile.occupation}",
+  "countryOfOrigin":"${seededProfile.countryOfOrigin}",
+  "religion":"${seededProfile.religion}",
+  "location":"${seededProfile.location}",
   "personality":string (2-3 sentences — real contradictions, specific speech habits),
   "background":string (3-4 sentences — specific history),
   "hiddenClue":string (1-2 sentences — the ${sinHook} angle, emotionally precise),
@@ -2020,6 +2079,12 @@ Sinful element to incorporate: "${sinHook}".`
       `<div class="contacts-loading" style="color:var(--accent2)">ERROR LOADING TARGET — CHECK CONNECTION</div>`;
     return;
   }
+  data.name = seededProfile.name;
+  data.age = seededProfile.age;
+  data.occupation = seededProfile.occupation;
+  data.countryOfOrigin = seededProfile.countryOfOrigin;
+  data.location = seededProfile.location;
+  data.religion = seededProfile.religion;
   state.targetData=data;
   state.targetName=data.name;
   state.pressureOptLow=data.pressureOptLow||35;
@@ -2035,6 +2100,7 @@ Sinful element to incorporate: "${sinHook}".`
 ═══════════════════════════════════════════ */
 async function beginNegotiation(){
   if(!state.targetData) return;
+  if(document.getElementById('input-area').style.display==='block') return;
   document.getElementById('begin-neg-btn')?.remove();
   document.getElementById('meters-row').style.display='';
   document.getElementById('input-area').style.display='block';
@@ -2334,7 +2400,7 @@ async function actuallyLoadNextLevel(){
     await showDossierIntro(state.targetData);
     buildDossierPanel(state.targetData);
     renderOptimalZone();
-    addBeginButtonToDossier();
+    await beginNegotiation();
   }
 }
 
@@ -2351,8 +2417,8 @@ function retryLevel(){
     updateMoodColor(savedTarget.moodStart||'neutral');
     // Make sure dossier is open
     if(!state.dossierOpen) openDossier();
+    beginNegotiation();
   }
-  addBeginButtonToDossier();
 }
 
 function fullRestart(){
@@ -2409,7 +2475,7 @@ async function startGame(){
     // After animation flies to side panel, build side panel content
     buildDossierPanel(state.targetData);
     renderOptimalZone();
-    addBeginButtonToDossier();
+    await beginNegotiation();
   }
 }
 
