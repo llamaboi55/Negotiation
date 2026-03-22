@@ -335,6 +335,16 @@ input:checked+.toggle-slider:before{transform:translateX(21px);background:var(--
   border:1px solid rgba(255,51,102,0.3);background:rgba(255,51,102,0.04)}
 .dossier-intro-file{font-size:0.84rem;line-height:1.7;color:var(--text);
   padding:0.7rem;border:1px solid var(--border);background:rgba(0,0,0,0.2);margin-top:0.5rem}
+.incoming-timer{margin-top:0.9rem;border:1px solid rgba(255,51,102,0.42);padding:0.6rem;background:rgba(255,51,102,0.06)}
+.incoming-timer-head{display:flex;justify-content:space-between;align-items:center;
+  font-family:'Share Tech Mono',monospace;font-size:0.62rem;letter-spacing:0.14em;color:var(--accent2)}
+.incoming-time{font-size:0.74rem;color:var(--gold)}
+.incoming-track{height:8px;background:rgba(26,42,58,0.8);margin-top:0.5rem;position:relative;overflow:hidden}
+.incoming-fill{height:100%;width:100%;background:linear-gradient(90deg,var(--accent2),var(--gold));
+  transition:width 0.08s linear}
+.incoming-track::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);animation:scan 1.2s linear infinite}
+@keyframes scan{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
 
 /* ── MAIN CONTENT ── */
 .main-content{
@@ -721,7 +731,7 @@ input:checked+.toggle-slider:before{transform:translateX(21px);background:var(--
           <div class="panel-label">// CLASSIFIED //</div>
           <div class="panel-title">TARGET FILE</div>
         </div>
-        <button class="pin-btn pinned" id="dossier-pin" onclick="toggleDossierPin()">📌 PINNED</button>
+        <button class="pin-btn" id="dossier-pin" onclick="toggleDossierPin()">📌 PIN</button>
       </div>
       <div id="dossier-inner-content">
         <div class="contacts-loading">RETRIEVING FILE<br>
@@ -839,29 +849,60 @@ const MODEL       = 'llama-3.3-70b-versatile';
 const MAX_STRIKES = 5;
 const LEV_COST    = 3;
 
-const SINFUL_HOOKS = [
-  'taboo secret','sexual indiscretion','Pride','Greed','Lust','Envy',
-  'Gluttony','Wrath','Sloth','covered-up murder','adultery','theft',
-  'bribe-taking','blackmail','embezzlement','drug habit','gambling debt',
-  'hidden identity','forged credentials','assault cover-up','money laundering'
+const TABOO_ITEMS = [
+  'forged adoption papers','bribed zoning inspector','predatory lender ties','illegal toxic dumping',
+  'staged warehouse fire','suppressed safety audits','pharmaceutical kickbacks','cash-paid witness intimidation',
+  'fake charity laundering','evidence locker tampering','union election coercion','off-book surveillance ring',
+  'coerced confession setup','stolen disaster relief funds','human trafficking logistics knowledge','customs bribery chain',
+  'gambling debt to violent syndicate','blackmail photos archive','embezzled pension contributions','fake shell company invoices',
+  'vote-buying intermediary role','cover-up of fatal negligence','secret second family dependency','identity theft racket link',
+  'extortion via private debt records','arson-for-insurance arrangement','counterfeit med supply contacts','forged compliance certificate',
+  'payroll ghost employee scheme','buried whistleblower complaint','hospital procurement fraud','fixer for illicit adoptions',
+  'offshore account beneficiary','tax authority leak source','smuggled restricted electronics','pirated software reselling ring',
+  'falsified customs manifests','illegal land seizure paperwork','stolen antiquities broker contact','church donation skimming',
+  'prison guard payoff channel','match-fixing bookmaker leverage','private militia fundraising role','covert political donor conduit',
+  'jury tampering intermediary','school grant misappropriation','water rights bribery deal','ransomware payout negotiator',
+  'deepfake scandal operation','media narrative manipulation','insider trading tip pipeline','unauthorized drone recon',
+  'disappearance cover story','forced labor contracting knowledge','art forgery authentication scam','secret paternity concealment',
+  'dangerous medical trial concealment','electrical grid sabotage planning','fuel adulteration scheme','airport cargo theft link',
+  'diplomatic pouch abuse','shadow passport broker','religious endowment misreporting','covert debt collection violence',
+  'disaster contractor collusion','chemical spill hush payments','school admissions bribery','witness relocation betrayal',
+  'fraudulent refugee documentation','counter-surveillance equipment theft'
 ];
 
 const TARGET_POOLS = {
   countries: [
-    { country:'Nigeria', location:'Lagos, Nigeria', names:['Amina Okafor','Chinedu Balogun','Temitope Adeyemi','Ifeoma Nwosu'] },
-    { country:'Japan', location:'Osaka, Japan', names:['Haruka Sato','Daichi Mori','Aoi Nakamura','Ren Takahashi'] },
-    { country:'Brazil', location:'Recife, Brazil', names:['Luana Pereira','Mateus Costa','Rafaela Souza','João Mendes'] },
-    { country:'India', location:'Mumbai, India', names:['Ananya Rao','Rohan Kapoor','Meera Iyer','Arjun Malhotra'] },
-    { country:'Egypt', location:'Alexandria, Egypt', names:['Yasmine El-Sayed','Karim Nassar','Salma Fathi','Omar El-Masry'] },
-    { country:'Poland', location:'Gdańsk, Poland', names:['Katarzyna Nowak','Michał Zieliński','Alicja Kowalczyk','Piotr Wójcik'] }
+    'Afghanistan','Albania','Algeria','Andorra','Angola','Antigua and Barbuda','Argentina','Armenia','Australia','Austria',
+    'Azerbaijan','Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin','Bhutan','Bolivia',
+    'Bosnia and Herzegovina','Botswana','Brazil','Brunei','Bulgaria','Burkina Faso','Burundi','Cabo Verde','Cambodia','Cameroon',
+    'Canada','Central African Republic','Chad','Chile','China','Colombia','Comoros','Congo','Costa Rica','Croatia','Cuba',
+    'Cyprus','Czech Republic','Denmark','Djibouti','Dominica','Dominican Republic','Ecuador','Egypt','El Salvador','Equatorial Guinea',
+    'Eritrea','Estonia','Eswatini','Ethiopia','Fiji','Finland','France','Gabon','Gambia','Georgia','Germany','Ghana','Greece',
+    'Grenada','Guatemala','Guinea','Guinea-Bissau','Guyana','Haiti','Honduras','Hungary','Iceland','India','Indonesia','Iran',
+    'Iraq','Ireland','Israel','Italy','Ivory Coast','Jamaica','Japan','Jordan','Kazakhstan','Kenya','Kiribati','Kuwait','Kyrgyzstan',
+    'Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein','Lithuania','Luxembourg','Madagascar','Malawi','Malaysia',
+    'Maldives','Mali','Malta','Marshall Islands','Mauritania','Mauritius','Mexico','Micronesia','Moldova','Monaco','Mongolia','Montenegro',
+    'Morocco','Mozambique','Myanmar','Namibia','Nauru','Nepal','Netherlands','New Zealand','Nicaragua','Niger','Nigeria','North Korea',
+    'North Macedonia','Norway','Oman','Pakistan','Palau','Panama','Papua New Guinea','Paraguay','Peru','Philippines','Poland','Portugal',
+    'Qatar','Romania','Russia','Rwanda','Saint Kitts and Nevis','Saint Lucia','Saint Vincent and the Grenadines','Samoa','San Marino',
+    'Sao Tome and Principe','Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','Solomon Islands',
+    'Somalia','South Africa','South Korea','South Sudan','Spain','Sri Lanka','Sudan','Suriname','Sweden','Switzerland','Syria','Taiwan',
+    'Tajikistan','Tanzania','Thailand','Timor-Leste','Togo','Tonga','Trinidad and Tobago','Tunisia','Turkey','Turkmenistan','Tuvalu',
+    'Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Uzbekistan','Vanuatu','Vatican City','Venezuela',
+    'Vietnam','Yemen','Zambia','Zimbabwe'
   ],
-  ages:[27,31,34,38,42,47,53,59],
+  ages:[24,27,31,34,38,42,47,53,59,63],
   occupations:[
     'shipping manifest auditor','private crematorium administrator','high-stakes debt mediator',
     'cargo insurance fraud examiner','underground archival conservator','offshore wind procurement broker',
-    'night-shift emergency dispatcher','diaspora remittance compliance officer'
+    'night-shift emergency dispatcher','diaspora remittance compliance officer','port health inspector',
+    'industrial arbitration counsel','rare earth supply analyst','telecom routing supervisor',
+    'medical logistics coordinator','civil registry records manager','freight compliance investigator'
   ],
-  religions:['Christianity','Islam','Hinduism','Buddhism','Judaism','Sikhism','Traditional beliefs','Non-religious'],
+  religions:[
+    {name:'Christianity',weight:31},{name:'Islam',weight:24},{name:'Hinduism',weight:15},{name:'Buddhism',weight:7},
+    {name:'Traditional / Folk',weight:6},{name:'Non-religious',weight:14},{name:'Sikhism',weight:1.5},{name:'Judaism',weight:0.4},{name:'Other',weight:1.1}
+  ],
   contactTemplates:[
     {id:'informant_1',name:'Silas Ward',role:'Port Intelligence Broker',tag:'INTEL',type:'info',desc:'You reach a broker who sells ship whispers by the kilogram. He trades favors, not loyalty.',personality:'Quiet, clipped, allergic to small talk.',canExtendClock:false},
     {id:'risk_1',name:'Nadia Voss',role:'Reputation Enforcer',tag:'PRESSURE',type:'risk',desc:'She can stain a name before sunrise and make it look like weather.',personality:'Cold humor, zero patience for indecision.',canExtendClock:false},
@@ -871,7 +912,14 @@ const TARGET_POOLS = {
     {id:'util_2',name:'Mara Quinn',role:'Logistics Ghost',tag:'SUPPORT',type:'util',desc:'She reroutes people, paper trails, and expectations without leaving fingerprints.',personality:'Efficient, polite, impossible to read.',canExtendClock:true},
     {id:'info_3',name:'Tariq Haleem',role:'Court Records Diver',tag:'FILES',type:'info',desc:'He finds what filing systems hope you miss.',personality:'Fast-talking and irreverent.',canExtendClock:false},
     {id:'util_3',name:'Elena Drago',role:'Backchannel Diplomat',tag:'CHANNEL',type:'util',desc:'She can reopen closed doors if you give her one believable angle.',personality:'Measured voice, very strategic.',canExtendClock:true}
-  ]
+  ],
+  behaviorAxes:{
+    stressResponses:['freezes under public pressure','over-explains when cornered','goes silent to regain control','lashes out then backpedals','deflects with procedural jargon'],
+    trustBuilders:['respectful tone and patience','clear reciprocity','fact-backed empathy','saving face publicly','structured options with control'],
+    triggerPoints:['public humiliation','threats to family reputation','religious disrespect','class-based condescension','impatience with complexity'],
+    preferredTactics:['rapport-first questioning','evidence-led confrontation','moral reframing','time-pressure framing','third-party validation'],
+    resistedTactics:['direct threats','mockery or sarcasm','vague promises','rapid-fire interrogation','moral grandstanding']
+  }
 };
 
 /* ═══════════════════════════════════════════
@@ -975,6 +1023,12 @@ function playDossierIncoming() {
   playTone(180,0.35,'sawtooth',0.15,0.04);
   playTone(240,0.42,'sawtooth',0.13,0.12);
   playTone(1200,0.08,'square',0.16,0.45);
+}
+function playDossierCountdownBeep(progress=0) {
+  const base=540+Math.floor(progress*420);
+  const vol=0.11+progress*0.12;
+  playTone(base,0.045,'square',vol);
+  if (progress>0.5) playTone(base-180,0.03,'triangle',vol*0.7,0.02);
 }
 function playCountdownUrgentTick(second) {
   if (lastUrgentTickSecond===second) return;
@@ -1179,6 +1233,16 @@ function secureRandomInt(max) {
   return value % max;
 }
 function pickRandom(list) { return list[secureRandomInt(list.length)]; }
+function weightedPick(list){
+  const total=list.reduce((sum,item)=>sum+(item.weight||0),0);
+  if (!total) return list[0]?.name||'';
+  let roll=Math.random()*total;
+  for (const item of list){
+    roll-=item.weight||0;
+    if (roll<=0) return item.name;
+  }
+  return list[list.length-1].name;
+}
 function shuffleSecure(list) {
   const copy=[...list];
   for (let i=copy.length-1;i>0;i--){
@@ -1209,7 +1273,7 @@ let state = {
   targetName:'', targetData:null,
   messages:[], leverage:0,
   contactsOpen:false, contactsPinned:false,
-  dossierOpen:false, dossierPinned:true,
+  dossierOpen:false, dossierPinned:false,
   activeContact:null, won:false, lost:false, strikes:0,
   contacts:[], contactsReady:false,
   usedArguments:[], usedPointKeys:[], lastMessageHash:'',
@@ -1218,7 +1282,8 @@ let state = {
   pressureOptLow:35, pressureOptHigh:65,
   styleCounters:{ghost:0,hammer:0,surgeon:0,diplomat:0,wildcard:0},
   aarData:{turningPoints:[],whatWorked:[],whatFailed:[]},
-  unlockedSections:[], prevLevelData:null
+  unlockedSections:[], prevLevelData:null,
+  dossierIntroCountdown:10, dossierIntroTimer:null, dossierIntroBeepTimer:null
 };
 
 /* ═══════════════════════════════════════════
@@ -1426,9 +1491,32 @@ window.addEventListener('resize', applyMainContentOffset);
 /* ═══════════════════════════════════════════
    DOSSIER INTRO ANIMATION
 ═══════════════════════════════════════════ */
+function clearDossierIntroTimers(){
+  if(state.dossierIntroTimer){clearInterval(state.dossierIntroTimer);state.dossierIntroTimer=null;}
+  if(state.dossierIntroBeepTimer){clearTimeout(state.dossierIntroBeepTimer);state.dossierIntroBeepTimer=null;}
+}
+function updateDossierIntroCountdown(remaining,total){
+  const timeEl=document.getElementById('incoming-time');
+  const fillEl=document.getElementById('incoming-fill');
+  if (timeEl) timeEl.textContent=`${remaining.toFixed(1)}s`;
+  if (fillEl) fillEl.style.width=`${Math.max(0,(remaining/total)*100)}%`;
+}
+function scheduleDossierIntroBeeps(totalSec){
+  const start=performance.now();
+  function tick(){
+    const elapsed=(performance.now()-start)/1000;
+    const progress=Math.min(1,elapsed/totalSec);
+    playDossierCountdownBeep(progress);
+    const nextMs=900-(progress*760);
+    if (progress<1){
+      state.dossierIntroBeepTimer=setTimeout(tick,Math.max(110,nextMs));
+    }
+  }
+  tick();
+}
 function showDossierIntro(data) {
   return new Promise(resolve => {
-    const DOSSIER_INTRO_HOLD_MS = 5000;
+    const DOSSIER_INTRO_SECONDS = 10;
     const diffColor = data.difficulty==='Extreme'?'var(--accent2)'
       :data.difficulty==='Hard'?'var(--gold)'
       :data.difficulty==='Medium'?'var(--accent)':'var(--accent3)';
@@ -1461,42 +1549,49 @@ function showDossierIntro(data) {
         <div class="dossier-intro-file">${data.fileText}</div>
       </div>
       <div class="dossier-intro-goal">${data.goal}</div>
-      <div class="dossier-intro-section-text" style="color:var(--dim);margin-top:0.7rem">
-        Initializing secure channel...
+      <div class="incoming-timer">
+        <div class="incoming-timer-head"><span>// INCOMING DOSSIER //</span><span class="incoming-time" id="incoming-time">10.0s</span></div>
+        <div class="incoming-track"><div class="incoming-fill" id="incoming-fill"></div></div>
       </div>`;
 
     const overlay = document.getElementById('dossier-intro-overlay');
     const box     = document.getElementById('dossier-intro-box');
-
+    clearDossierIntroTimers();
     overlay.classList.add('visible');
     requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{ box.classList.add('visible'); });
     });
     playDossierIncoming();
+    scheduleDossierIntroBeeps(DOSSIER_INTRO_SECONDS);
 
-    setTimeout(() => {
-      // Animate dossier flying to the right panel
-      box.style.transition = 'transform 0.6s cubic-bezier(0.4,0,0.2,1), opacity 0.5s';
-      const rightEdge = window.innerWidth;
-      const boxRect   = box.getBoundingClientRect();
-      const translateX = rightEdge - boxRect.left + 20;
-      box.style.transform = `translateX(${translateX}px) scale(0.85)`;
-      box.style.opacity   = '0';
-      overlay.style.opacity = '0';
-
-      setTimeout(()=>{
-        overlay.classList.remove('visible');
-        box.classList.remove('visible');
-        box.style.transform = '';
-        box.style.opacity   = '';
-        box.style.transition= '';
-        overlay.style.opacity = '';
-        // Open the dossier side panel
-        state.dossierOpen = false; // force open
-        openDossier();
-        resolve();
-      }, 620);
-    }, DOSSIER_INTRO_HOLD_MS);
+    const started=performance.now();
+    state.dossierIntroTimer=setInterval(()=>{
+      const elapsed=(performance.now()-started)/1000;
+      const remain=Math.max(0,DOSSIER_INTRO_SECONDS-elapsed);
+      updateDossierIntroCountdown(remain,DOSSIER_INTRO_SECONDS);
+      if (remain<=0.01){
+        clearDossierIntroTimers();
+        overlay.style.opacity = '0';
+        box.style.opacity = '0';
+        box.style.transform = 'translateY(-16px) scale(0.98)';
+        setTimeout(()=>{
+          overlay.classList.remove('visible');
+          box.classList.remove('visible');
+          box.style.transform = '';
+          box.style.opacity   = '';
+          overlay.style.opacity = '';
+          // Keep dossier closed/unpinned at mission start for mobile clarity
+          state.dossierOpen = false;
+          state.dossierPinned = false;
+          document.getElementById('dossier-tab').classList.add('closed');
+          const btn=document.getElementById('dossier-pin');
+          btn.classList.remove('pinned');
+          btn.textContent='📌 PIN';
+          applyMainContentOffset();
+          resolve();
+        }, 380);
+      }
+    },80);
   });
 }
 
@@ -1753,6 +1848,10 @@ function buildDossierPanel(data){
         </div>
       </div>
       <div class="dossier-psection">
+        <div class="dossier-psection-title">TACTICAL FORECAST</div>
+        <div class="dossier-psection-body">${data.tacticIntel||'Behavioral model incomplete.'}</div>
+      </div>
+      <div class="dossier-psection">
         <div class="dossier-psection-title">HIDDEN INTEL</div>
         <div class="dossier-psection-body" id="doss-hidden">
           <span class="redacted" data-key="hiddenClue" onclick="hintUnlock(this)">████████████████████</span>
@@ -1869,6 +1968,7 @@ Personality: ${c.personality}
 Specialty: ${c.desc}
 Target: ${state.targetData?.name} | ${state.targetData?.occupation}
 Target personality: ${state.targetData?.personality}
+Behavior model: ${JSON.stringify(state.targetData?.behaviorModel||{})}
 Hidden vulnerability: ${state.targetData?.hiddenClue}
 Goal: ${state.targetData?.goal}
 State — progress:${state.progress}%, trust:${state.trust}%, suspicion:${state.suspicion}%, pressure:${state.pressure}%
@@ -2068,12 +2168,16 @@ Return ONLY valid JSON:
 function buildRandomTargetProfile(){
   const country = pickRandom(TARGET_POOLS.countries);
   return {
-    countryOfOrigin:country.country,
-    location:country.location,
-    name:pickRandom(country.names),
+    countryOfOrigin:country,
+    location:`${pickRandom(['Capital district','Financial quarter','Port authority zone','Industrial corridor','Historic district'])}, ${country}`,
     age:pickRandom(TARGET_POOLS.ages),
     occupation:pickRandom(TARGET_POOLS.occupations),
-    religion:pickRandom(TARGET_POOLS.religions)
+    religion:weightedPick(TARGET_POOLS.religions),
+    stressResponse:pickRandom(TARGET_POOLS.behaviorAxes.stressResponses),
+    trustBuilder:pickRandom(TARGET_POOLS.behaviorAxes.trustBuilders),
+    triggerPoint:pickRandom(TARGET_POOLS.behaviorAxes.triggerPoints),
+    preferredTactic:pickRandom(TARGET_POOLS.behaviorAxes.preferredTactics),
+    resistedTactic:pickRandom(TARGET_POOLS.behaviorAxes.resistedTactics)
   };
 }
 
@@ -2091,24 +2195,28 @@ async function loadTarget(){
       </span>
     </div>`;
 
-  const sinHook=pickRandom(SINFUL_HOOKS);
+  const tabooHook=pickRandom(TABOO_ITEMS);
   const seededProfile=buildRandomTargetProfile();
   const prompt=[{
     role:'system',
     content:`You are generating a classified dossier for a negotiation thriller game.
 Use these fixed profile values exactly as provided:
-Name: ${seededProfile.name}
 Age: ${seededProfile.age}
 Occupation: ${seededProfile.occupation}
 Country of origin: ${seededProfile.countryOfOrigin}
 Location: ${seededProfile.location}
 Religion: ${seededProfile.religion}
+Behavioral stress response: ${seededProfile.stressResponse}
+Most effective approach: ${seededProfile.preferredTactic}
+Least effective approach: ${seededProfile.resistedTactic}
+Trust builder: ${seededProfile.trustBuilder}
+Trigger point: ${seededProfile.triggerPoint}
 Do not change any fixed profile value.
-The hidden clue MUST incorporate this sinful element: "${sinHook}". Make it emotionally precise and morally uncomfortable.
+The hidden clue MUST incorporate this taboo element: "${tabooHook}". Make it emotionally precise and morally uncomfortable.
 Goal must remain ethically ambiguous.
 Return ONLY valid JSON:
 {
-  "name":"${seededProfile.name}",
+  "name":string,
   "age":${seededProfile.age},
   "occupation":"${seededProfile.occupation}",
   "countryOfOrigin":"${seededProfile.countryOfOrigin}",
@@ -2116,14 +2224,15 @@ Return ONLY valid JSON:
   "location":"${seededProfile.location}",
   "personality":string (2-3 sentences — real contradictions, specific speech habits),
   "background":string (3-4 sentences — specific history),
-  "hiddenClue":string (1-2 sentences — the ${sinHook} angle, emotionally precise),
+  "hiddenClue":string (1-2 sentences — the ${tabooHook} angle, emotionally precise),
   "fileText":string (5-6 sentences — surveillance file style, hiddenClue embedded naturally),
   "goal":string (1 sentence — what player must convince them to do),
   "difficulty":"Easy"|"Medium"|"Hard"|"Extreme",
   "moodStart":string (short phrase — their emotional state right now),
   "pressureOptLow":number (20-50),
   "pressureOptHigh":number (55-85),
-  "environment":string (3-5 words — physical setting of this meeting)
+  "environment":string (3-5 words — physical setting of this meeting),
+  "tacticIntel":string (1-2 sentences: what works / what fails against this person)
 }`
   },{
     role:'user',
@@ -2134,20 +2243,26 @@ Difficulty feel: ${
   state.level===3?'deeply suspicious and principled':
   'near-impossible — morally entrenched and highly intelligent'
 }.
-Sinful element to incorporate: "${sinHook}".`
+Taboo element to incorporate: "${tabooHook}".`
   }];
   const data=await groqJSON(prompt,1000);
-  if(!data||!data.name){
+  if(!data){
     document.getElementById('dossier-inner-content').innerHTML=
       `<div class="contacts-loading" style="color:var(--accent2)">ERROR LOADING TARGET — CHECK CONNECTION</div>`;
     return;
   }
-  data.name = seededProfile.name;
+  data.name = data.name || `Asset-${String(secureRandomInt(900)+100)}`;
   data.age = seededProfile.age;
   data.occupation = seededProfile.occupation;
   data.countryOfOrigin = seededProfile.countryOfOrigin;
   data.location = seededProfile.location;
   data.religion = seededProfile.religion;
+  data.behaviorModel = {
+    stressResponse:seededProfile.stressResponse, trustBuilder:seededProfile.trustBuilder,
+    triggerPoint:seededProfile.triggerPoint, preferredTactic:seededProfile.preferredTactic, resistedTactic:seededProfile.resistedTactic
+  };
+  data.tacticIntel = data.tacticIntel || `${seededProfile.preferredTactic} is more likely to work; ${seededProfile.resistedTactic} tends to fail.`;
+  data.hiddenClue = `${data.hiddenClue} (Flagged taboo vector: ${tabooHook}.)`;
   state.targetData=data;
   state.targetName=data.name;
   state.pressureOptLow=data.pressureOptLow||35;
@@ -2175,6 +2290,8 @@ async function beginNegotiation(){
     content:`You ARE ${d.name}, a ${d.occupation} based in ${d.location}.
 Personality: ${d.personality}
 Background: ${d.background}
+Behavior model: ${JSON.stringify(d.behaviorModel||{})}
+Tactical forecast: ${d.tacticIntel||""}
 Current mood: ${d.moodStart}
 Setting: ${d.environment||'a private meeting room'}
 ABSOLUTE CHARACTER RULES — NEVER BREAK UNDER ANY CIRCUMSTANCES:
@@ -2236,8 +2353,11 @@ TARGET:
 Name: ${d.name} | Age: ${d.age} | Occupation: ${d.occupation} | Location: ${d.location}
 Personality: ${d.personality}
 Background: ${d.background}
+Behavior model: ${JSON.stringify(d.behaviorModel||{})}
+Tactical forecast: ${d.tacticIntel||""}
 Hidden vulnerability/sin: ${d.hiddenClue}
 Mission goal: ${d.goal}
+Behavior model: stress=${d.behaviorModel?.stressResponse}; trust builder=${d.behaviorModel?.trustBuilder}; trigger=${d.behaviorModel?.triggerPoint}; preferred=${d.behaviorModel?.preferredTactic}; resisted=${d.behaviorModel?.resistedTactic}
 Setting: ${d.environment||'private meeting'}
 State — progress:${state.progress}%, trust:${state.trust}%, suspicion:${state.suspicion}%, pressure:${state.pressure}%
 Optimal pressure zone: ${state.pressureOptLow}%–${state.pressureOptHigh}%
@@ -2463,7 +2583,7 @@ async function actuallyLoadNextLevel(){
     await showDossierIntro(state.targetData);
     buildDossierPanel(state.targetData);
     renderOptimalZone();
-    await beginNegotiation();
+    addBeginButtonToDossier();
   }
 }
 
@@ -2480,7 +2600,7 @@ function retryLevel(){
     updateMoodColor(savedTarget.moodStart||'neutral');
     // Make sure dossier is open
     if(!state.dossierOpen) openDossier();
-    beginNegotiation();
+    addBeginButtonToDossier();
   }
 }
 
@@ -2491,7 +2611,7 @@ function fullRestart(){
   stopMusicLayer(); stopCountdown();
   // Close panels
   state.contactsOpen=false; state.contactsPinned=false;
-  state.dossierOpen=false; state.dossierPinned=true;
+  state.dossierOpen=false; state.dossierPinned=false;
   document.getElementById('contacts-tab').classList.add('closed');
   document.getElementById('dossier-tab').classList.add('closed');
   document.getElementById('contacts-pin').classList.remove('pinned');
@@ -2538,7 +2658,7 @@ async function startGame(){
     // After animation flies to side panel, build side panel content
     buildDossierPanel(state.targetData);
     renderOptimalZone();
-    await beginNegotiation();
+    addBeginButtonToDossier();
   }
 }
 
