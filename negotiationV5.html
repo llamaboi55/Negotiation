@@ -1516,7 +1516,7 @@ function scheduleDossierIntroBeeps(totalSec){
 }
 function showDossierIntro(data) {
   return new Promise(resolve => {
-    const DOSSIER_INTRO_SECONDS = 0.2;
+    const DOSSIER_INTRO_SECONDS = 10;
     const diffColor = data.difficulty==='Extreme'?'var(--accent2)'
       :data.difficulty==='Hard'?'var(--gold)'
       :data.difficulty==='Medium'?'var(--accent)':'var(--accent3)';
@@ -1848,8 +1848,8 @@ function buildDossierPanel(data){
         </div>
       </div>
       <div class="dossier-psection">
-        <div class="dossier-psection-title">TACTICAL FORECAST</div>
-        <div class="dossier-psection-body">${data.tacticIntel||'Behavioral model incomplete.'}</div>
+        <div class="dossier-psection-title">BEHAVIORAL NOTES</div>
+        <div class="dossier-psection-body">${data.tacticIntel||'Behavioral notes incomplete.'}</div>
       </div>
       <div class="dossier-psection">
         <div class="dossier-psection-title">HIDDEN INTEL</div>
@@ -2200,13 +2200,14 @@ Country of origin: ${seededProfile.countryOfOrigin}
 Location: ${seededProfile.location}
 Religion: ${seededProfile.religion}
 Behavioral stress response: ${seededProfile.stressResponse}
-Most effective approach: ${seededProfile.preferredTactic}
-Least effective approach: ${seededProfile.resistedTactic}
+Behavioral belief pattern: ${seededProfile.preferredTactic}
+Behavioral resistance pattern: ${seededProfile.resistedTactic}
 Trust builder: ${seededProfile.trustBuilder}
 Trigger point: ${seededProfile.triggerPoint}
 Do not change any fixed profile value.
 The hidden clue MUST incorporate this taboo element: "${tabooHook}". Make it emotionally precise and morally uncomfortable.
 Goal must remain ethically ambiguous.
+Do NOT include advice about what will work, what will fail, leverage opportunities, persuasion strategy, or recommended tactics.
 Return ONLY valid JSON:
 {
   "name":string,
@@ -2225,7 +2226,7 @@ Return ONLY valid JSON:
   "pressureOptLow":number (20-50),
   "pressureOptHigh":number (55-85),
   "environment":string (3-5 words — physical setting of this meeting),
-  "tacticIntel":string (1-2 sentences: what works / what fails against this person)
+  "tacticIntel":string (1-2 sentences: neutral behavioral notes, beliefs, or communication tendencies; never recommend tactics)
 }`
   },{
     role:'user',
@@ -2254,7 +2255,7 @@ Taboo element to incorporate: "${tabooHook}".`
     stressResponse:seededProfile.stressResponse, trustBuilder:seededProfile.trustBuilder,
     triggerPoint:seededProfile.triggerPoint, preferredTactic:seededProfile.preferredTactic, resistedTactic:seededProfile.resistedTactic
   };
-  data.tacticIntel = data.tacticIntel || `${seededProfile.preferredTactic} is more likely to work; ${seededProfile.resistedTactic} tends to fail.`;
+  data.tacticIntel = data.tacticIntel || `Belief pattern: ${seededProfile.preferredTactic}. Resistance pattern: ${seededProfile.resistedTactic}.`;
   data.hiddenClue = `${data.hiddenClue} (Flagged taboo vector: ${tabooHook}.)`;
   state.targetData=data;
   state.targetName=data.name;
