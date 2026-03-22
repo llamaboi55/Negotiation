@@ -824,6 +824,7 @@ const GROQ_KEY    = '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';
 const MODEL       = 'llama-3.3-70b-versatile';
 const MAX_STRIKES = 5;
 const LEV_COST    = 3;
+const DOSSIER_INTRO_DURATION = 5000;
 
 const SINFUL_HOOKS = [
   'taboo secret','sexual indiscretion','Pride','Greed','Lust','Envy',
@@ -840,6 +841,7 @@ let masterGain, ambientGain, uiGain, musicGain;
 let currentAmbientSource = null;
 let currentMusicState = 'neutral';
 let musicOscillators = [];
+let lastClockWarnSecond = null;
 
 function getAC() {
   if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
@@ -849,10 +851,10 @@ function getAC() {
 function initAudio() {
   try {
     const ac = getAC();
-    masterGain = ac.createGain(); masterGain.gain.value = 0.7; masterGain.connect(ac.destination);
-    ambientGain = ac.createGain(); ambientGain.gain.value = 0.07; ambientGain.connect(masterGain);
-    uiGain = ac.createGain(); uiGain.gain.value = 0.4; uiGain.connect(masterGain);
-    musicGain = ac.createGain(); musicGain.gain.value = 0.055; musicGain.connect(masterGain);
+    masterGain = ac.createGain(); masterGain.gain.value = 0.9; masterGain.connect(ac.destination);
+    ambientGain = ac.createGain(); ambientGain.gain.value = 0.09; ambientGain.connect(masterGain);
+    uiGain = ac.createGain(); uiGain.gain.value = 0.65; uiGain.connect(masterGain);
+    musicGain = ac.createGain(); musicGain.gain.value = 0.08; musicGain.connect(masterGain);
     startAmbient(); startMusicLayer('neutral');
   } catch(e) {}
 }
@@ -881,7 +883,10 @@ function playStaticBurst(vol=0.28, dur=0.14) {
     src.start(); src.stop(ac.currentTime+dur+0.05);
   } catch(e) {}
 }
-function playSend() { playTone(800,0.04,'square',0.13); playTone(1200,0.06,'square',0.07,0.04); }
+function playSend() {
+  playTone(880,0.05,'square',0.2);
+  playTone(1280,0.08,'triangle',0.13,0.04);
+}
 function playStrike() {
   try {
     const ac = getAC(); if (!uiGain) return;
@@ -894,16 +899,66 @@ function playStrike() {
   playStaticBurst(0.38);
 }
 function playProgressTone() {
-  playTone(440,0.18,'sine',0.11); playTone(660,0.25,'sine',0.08,0.14); playTone(880,0.35,'sine',0.05,0.28);
+  playTone(440,0.16,'triangle',0.16);
+  playTone(660,0.22,'triangle',0.14,0.1);
+  playTone(990,0.28,'sine',0.12,0.22);
 }
-function playIntelTone() { playTone(523,0.13,'sine',0.14); playTone(659,0.18,'sine',0.11,0.11); }
-function playSilenceTone() { playTone(220,0.75,'sine',0.035); }
+function playIntelTone() { playTone(620,0.14,'triangle',0.2); playTone(930,0.2,'sine',0.16,0.1); }
+function playSilenceTone() {
+  playTone(180,0.45,'sine',0.06);
+  playTone(140,0.55,'triangle',0.05,0.14);
+}
 function playLeverageTone(type) {
-  if (type==='info') { playTone(440,0.1,'sine',0.18); playTone(550,0.18,'sine',0.13,0.1); }
-  else if (type==='risk') { playTone(150,0.14,'sawtooth',0.22); playTone(100,0.28,'square',0.14,0.11); }
-  else { playTone(330,0.11,'triangle',0.18); playTone(440,0.14,'triangle',0.13,0.1); }
+  if (type==='info') {
+    playTone(460,0.09,'triangle',0.2); playTone(700,0.2,'sine',0.15,0.08);
+  } else if (type==='risk') {
+    playTone(180,0.12,'sawtooth',0.28); playTone(120,0.24,'square',0.2,0.1); playStaticBurst(0.18,0.08);
+  } else {
+    playTone(300,0.12,'triangle',0.2); playTone(520,0.16,'triangle',0.15,0.09);
+  }
 }
 function playContactDeploy(type) { playLeverageTone(type); }
+function playDossierIncoming() {
+  playStaticBurst(0.34,0.12);
+  playTone(300,0.18,'sawtooth',0.2);
+  playTone(520,0.2,'square',0.2,0.09);
+  playTone(760,0.26,'triangle',0.16,0.18);
+}
+function playDossierTransfer() {
+  playTone(980,0.08,'triangle',0.17);
+  playTone(700,0.13,'triangle',0.14,0.06);
+  playTone(420,0.2,'sine',0.12,0.12);
+}
+function playPanelToggle(isOpen) {
+  if (isOpen) {
+    playTone(520,0.08,'triangle',0.11);
+    playTone(700,0.1,'sine',0.09,0.05);
+  } else {
+    playTone(420,0.08,'triangle',0.1);
+    playTone(320,0.1,'sine',0.08,0.05);
+  }
+}
+function playLeverageResult(effect='partial') {
+  if (effect==='strong') {
+    playTone(620,0.12,'triangle',0.2); playTone(920,0.2,'sine',0.16,0.08);
+  } else if (effect==='backfire' || effect==='none') {
+    playTone(210,0.13,'square',0.2); playTone(160,0.22,'sawtooth',0.15,0.08);
+  } else {
+    playTone(430,0.1,'triangle',0.12); playTone(560,0.15,'sine',0.1,0.08);
+  }
+}
+function playSuccessFanfare() {
+  playTone(520,0.1,'triangle',0.2);
+  playTone(780,0.14,'triangle',0.17,0.08);
+  playTone(1040,0.18,'sine',0.14,0.16);
+}
+function playFailureSting() {
+  playTone(210,0.2,'sawtooth',0.24);
+  playTone(140,0.32,'square',0.18,0.06);
+}
+function playClockWarning() {
+  playTone(1040,0.05,'square',0.12);
+}
 function playTargetVoice(mood) {
   try {
     if (!mood) return; const m = mood.toLowerCase();
@@ -1254,12 +1309,14 @@ function openContacts() {
   if (state.contactsOpen) return;
   state.contactsOpen = true;
   document.getElementById('contacts-tab').classList.remove('closed');
+  playPanelToggle(true);
   applyMainContentOffset();
 }
 function closeContacts() {
   if (state.contactsPinned) return;
   state.contactsOpen = false;
   document.getElementById('contacts-tab').classList.add('closed');
+  playPanelToggle(false);
   applyMainContentOffset();
 }
 function toggleContacts() { state.contactsOpen ? closeContacts() : openContacts(); }
@@ -1275,12 +1332,14 @@ function openDossier() {
   if (state.dossierOpen) return;
   state.dossierOpen = true;
   document.getElementById('dossier-tab').classList.remove('closed');
+  playPanelToggle(true);
   applyMainContentOffset();
 }
 function closeDossier() {
   if (state.dossierPinned) return;
   state.dossierOpen = false;
   document.getElementById('dossier-tab').classList.add('closed');
+  playPanelToggle(false);
   applyMainContentOffset();
 }
 function toggleDossier() { state.dossierOpen ? closeDossier() : openDossier(); }
@@ -1340,21 +1399,22 @@ function showDossierIntro(data) {
         <div class="dossier-intro-file">${data.fileText}</div>
       </div>
       <div class="dossier-intro-goal">${data.goal}</div>
-      <div class="btn-group" style="justify-content:center;padding-bottom:0.5rem">
-        <button class="btn success" id="intro-begin-btn" style="width:100%;max-width:320px">
-          INITIATE CONTACT
-        </button>
+      <div class="btn-group" style="justify-content:center;padding-bottom:0.5rem;opacity:0.85">
+        <span class="btn success" style="width:100%;max-width:320px;display:flex;justify-content:center;cursor:default">
+          INCOMING DOSSIER — HOLDING ${Math.round(DOSSIER_INTRO_DURATION/1000)}s
+        </span>
       </div>`;
 
     const overlay = document.getElementById('dossier-intro-overlay');
     const box     = document.getElementById('dossier-intro-box');
 
     overlay.classList.add('visible');
+    playDossierIncoming();
     requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{ box.classList.add('visible'); });
     });
 
-    document.getElementById('intro-begin-btn').onclick = () => {
+    setTimeout(() => {
       // Animate dossier flying to the right panel
       box.style.transition = 'transform 0.6s cubic-bezier(0.4,0,0.2,1), opacity 0.5s';
       const rightEdge = window.innerWidth;
@@ -1363,6 +1423,7 @@ function showDossierIntro(data) {
       box.style.transform = `translateX(${translateX}px) scale(0.85)`;
       box.style.opacity   = '0';
       overlay.style.opacity = '0';
+      playDossierTransfer();
 
       setTimeout(()=>{
         overlay.classList.remove('visible');
@@ -1376,7 +1437,7 @@ function showDossierIntro(data) {
         openDossier();
         resolve();
       }, 620);
-    };
+    }, DOSSIER_INTRO_DURATION);
   });
 }
 
@@ -1397,6 +1458,7 @@ function addStrike() {
 }
 async function triggerStrikeLoss() {
   state.lost=true; stopCountdown();
+  playFailureSting();
   document.getElementById('input-area').style.display='none';
   await new Promise(r=>setTimeout(r,700));
   const feedback=await generateFailFeedback();
@@ -1417,6 +1479,7 @@ async function triggerStrikeLoss() {
 }
 function triggerJailbreakLoss() {
   if (state.lost) return; state.lost=true; stopCountdown();
+  playFailureSting();
   playJailbreakAlarm(); triggerJailbreakFlash();
   document.getElementById('input-area').style.display='none';
   setTimeout(()=>{
@@ -1527,20 +1590,24 @@ function renderOptimalZone(){
 ═══════════════════════════════════════════ */
 function startCountdown(seconds=300){
   state.countdown=seconds; const b=document.getElementById('countdown-badge'); if(b)b.style.display='';
+  lastClockWarnSecond = null;
   updateCountdownDisplay();
   state.countdownInterval=setInterval(()=>{state.countdown--;updateCountdownDisplay();if(state.countdown<=0){clearInterval(state.countdownInterval);triggerTimeOut();}},1000);
 }
-function stopCountdown(){clearInterval(state.countdownInterval);const b=document.getElementById('countdown-badge');if(b)b.style.display='none';}
+function stopCountdown(){clearInterval(state.countdownInterval);lastClockWarnSecond=null;const b=document.getElementById('countdown-badge');if(b)b.style.display='none';}
 function extendCountdown(s=60){state.countdown+=s;addSystemMsg(`⏱ Clock extended by ${s}s.`,'');}
 function updateCountdownDisplay(){
   const b=document.getElementById('countdown-badge'); if(!b) return;
   const m=Math.floor(state.countdown/60),s=state.countdown%60;
   b.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   b.classList.toggle('urgent',state.countdown<=30);
+  if (state.countdown<=30 && state.countdown%5===0 && state.countdown!==lastClockWarnSecond){
+    lastClockWarnSecond=state.countdown; playClockWarning();
+  }
 }
 async function triggerTimeOut(){
   if(state.won||state.lost) return; state.lost=true;
-  document.getElementById('input-area').style.display='none'; playStrike();
+  document.getElementById('input-area').style.display='none'; playStrike(); playFailureSting();
   const feedback=await generateFailFeedback();
   const sa=document.getElementById('success-area');
   sa.innerHTML=`<div class="fail-card">
@@ -1662,7 +1729,7 @@ function unlockWithLeverage(key){
   if (state.leverage<LEV_COST){addSystemMsg(`// Need ${LEV_COST} LEV. Current: ${state.leverage} LEV. //`,'alert');return;}
   state.leverage-=LEV_COST; updateLevBadge(); state.unlockedSections.push(key);
   revealSection(key); addSystemMsg(`⚡ INTEL UNLOCKED: ${key==='background'?'Background':'Hidden intel'} decrypted.`,'intel');
-  playIntelTone(); autosave();
+  playIntelTone(); playLeverageResult('strong'); autosave();
 }
 function revealSection(key){
   const data=state.targetData; if (!data) return;
@@ -1855,7 +1922,9 @@ Return ONLY valid JSON:
 ═══════════════════════════════════════════ */
 function doLeverage(){
   if(state.leverage<LEV_COST){
-    addSystemMsg(`// Need ${LEV_COST} LEV. Current: ${state.leverage} LEV. //`,'alert'); return;
+    addSystemMsg(`// Need ${LEV_COST} LEV. Current: ${state.leverage} LEV. //`,'alert');
+    playLeverageResult('none');
+    return;
   }
   document.getElementById('leverage-modal-body').innerHTML=`
     <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--gold);
@@ -1937,6 +2006,7 @@ Return ONLY valid JSON:
     if(result.complication) addSystemMsg(`⚠ COMPLICATION: ${result.complication}`,'alert');
     const effectLabels={strong:'intel',partial:'',none:'alert',backfire:'alert'};
     addSystemMsg(`⚡ LEVERAGE EFFECT: ${(result.leverageEffect||'partial').toUpperCase()}`,effectLabels[result.leverageEffect]||'');
+    playLeverageResult(result.leverageEffect||'partial');
     if(result.leverageEffect==='strong') playProgressTone();
     if(result.leverageEffect==='backfire'){ playStrike(); triggerGlitch(1); }
     applyMeters({trust:result.trustDelta||0,suspicion:result.suspicionDelta||0,pressure:result.pressureDelta||0});
@@ -2199,6 +2269,7 @@ Return ONLY valid JSON:
 async function handleWin(){
   state.won=true; stopCountdown();
   document.getElementById('input-area').style.display='none';
+  playSuccessFanfare();
   playProgressTone(); setTimeout(playProgressTone,420);
   await new Promise(r=>setTimeout(r,800));
   const styleTag=computeStyleTag();
