@@ -588,9 +588,9 @@ input:checked+.toggle-slider:before{transform:translateX(21px);background:var(--
 
 /* ── RESPONSIVE ── */
 @media(max-width:700px){
-  :root{--contacts-w:250px;--dossier-w:260px;--header-h:50px}
+  :root{--contacts-w:min(78vw,280px);--dossier-w:min(80vw,290px);--header-h:52px;--base-font-size:15px}
   .msg-bubble{max-width:88%}
-  .panel-handle-btn{width:24px;height:92px}
+  .panel-handle-btn{width:22px;height:84px}
   .handle-icon{font-size:0.53rem}
 }
 @media(max-width:400px){
@@ -1516,7 +1516,7 @@ function scheduleDossierIntroBeeps(totalSec){
 }
 function showDossierIntro(data) {
   return new Promise(resolve => {
-    const DOSSIER_INTRO_SECONDS = 10;
+    const DOSSIER_INTRO_SECONDS = 0.2;
     const diffColor = data.difficulty==='Extreme'?'var(--accent2)'
       :data.difficulty==='Hard'?'var(--gold)'
       :data.difficulty==='Medium'?'var(--accent)':'var(--accent3)';
@@ -1898,13 +1898,6 @@ function revealSection(key){
   if (key==='hiddenClue'){const el=document.getElementById('doss-hidden');if(el)el.innerHTML=`<span style="color:var(--gold)">${text}</span>`;document.getElementById('unlock-intel-btn')?.remove();}
 }
 function updateLevBadge(){const b=document.getElementById('lev-badge');if(b)b.textContent=`⚡ ${state.leverage} LEV`;}
-function addBeginButtonToDossier(){
-  document.getElementById('begin-neg-btn')?.remove();
-  const inner=document.getElementById('dossier-inner-content'); if (!inner) return;
-  const wrap=document.createElement('div'); wrap.style.cssText='padding:0.4rem 0.75rem 0.9rem';
-  wrap.innerHTML=`<button id="begin-neg-btn" class="btn success" onclick="beginNegotiation()" style="width:100%;font-size:0.88rem;padding:0.68rem">INITIATE CONTACT</button>`;
-  inner.appendChild(wrap);
-}
 
 /* ═══════════════════════════════════════════
    CONTACTS
@@ -2279,7 +2272,6 @@ Taboo element to incorporate: "${tabooHook}".`
 async function beginNegotiation(){
   if(!state.targetData) return;
   if(document.getElementById('input-area').style.display==='block') return;
-  document.getElementById('begin-neg-btn')?.remove();
   document.getElementById('meters-row').style.display='';
   document.getElementById('input-area').style.display='block';
   if(state.hardMode) startCountdown(300);
@@ -2580,10 +2572,10 @@ async function actuallyLoadNextLevel(){
   applyMainContentOffset();
   await loadTarget();
   if(state.targetData){
-    await showDossierIntro(state.targetData);
+    document.getElementById('dossier-intro-overlay')?.classList.remove('visible');
     buildDossierPanel(state.targetData);
     renderOptimalZone();
-    addBeginButtonToDossier();
+    await beginNegotiation();
   }
 }
 
@@ -2598,9 +2590,13 @@ function retryLevel(){
     buildDossierPanel(savedTarget);
     renderOptimalZone();
     updateMoodColor(savedTarget.moodStart||'neutral');
-    // Make sure dossier is open
-    if(!state.dossierOpen) openDossier();
-    addBeginButtonToDossier();
+    state.dossierOpen=false;
+    state.dossierPinned=false;
+    document.getElementById('dossier-tab').classList.add('closed');
+    document.getElementById('dossier-pin').classList.remove('pinned');
+    document.getElementById('dossier-pin').textContent='📌 PIN';
+    applyMainContentOffset();
+    beginNegotiation();
   }
 }
 
@@ -2652,13 +2648,12 @@ async function startGame(){
   // Load contacts and target in parallel
   const [,] = await Promise.all([generateContacts(), loadTarget()]);
 
-  // Show dossier intro in centre of screen
+  // Start immediately once mission data is ready
   if(state.targetData){
-    await showDossierIntro(state.targetData);
-    // After animation flies to side panel, build side panel content
+    document.getElementById('dossier-intro-overlay')?.classList.remove('visible');
     buildDossierPanel(state.targetData);
     renderOptimalZone();
-    addBeginButtonToDossier();
+    await beginNegotiation();
   }
 }
 
