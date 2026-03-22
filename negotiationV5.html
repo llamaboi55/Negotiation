@@ -851,10 +851,10 @@ function getAC() {
 function initAudio() {
   try {
     const ac = getAC();
-    masterGain = ac.createGain(); masterGain.gain.value = 0.9; masterGain.connect(ac.destination);
-    ambientGain = ac.createGain(); ambientGain.gain.value = 0.09; ambientGain.connect(masterGain);
-    uiGain = ac.createGain(); uiGain.gain.value = 0.65; uiGain.connect(masterGain);
-    musicGain = ac.createGain(); musicGain.gain.value = 0.08; musicGain.connect(masterGain);
+    masterGain = ac.createGain(); masterGain.gain.value = 0.92; masterGain.connect(ac.destination);
+    ambientGain = ac.createGain(); ambientGain.gain.value = 0.1; ambientGain.connect(masterGain);
+    uiGain = ac.createGain(); uiGain.gain.value = 0.7; uiGain.connect(masterGain);
+    musicGain = ac.createGain(); musicGain.gain.value = 0.085; musicGain.connect(masterGain);
     startAmbient(); startMusicLayer('neutral');
   } catch(e) {}
 }
@@ -883,10 +883,7 @@ function playStaticBurst(vol=0.28, dur=0.14) {
     src.start(); src.stop(ac.currentTime+dur+0.05);
   } catch(e) {}
 }
-function playSend() {
-  playTone(880,0.05,'square',0.2);
-  playTone(1280,0.08,'triangle',0.13,0.04);
-}
+function playSend() { playTone(800,0.04,'square',0.13); playTone(1200,0.06,'square',0.07,0.04); }
 function playStrike() {
   try {
     const ac = getAC(); if (!uiGain) return;
@@ -899,66 +896,42 @@ function playStrike() {
   playStaticBurst(0.38);
 }
 function playProgressTone() {
-  playTone(440,0.16,'triangle',0.16);
-  playTone(660,0.22,'triangle',0.14,0.1);
-  playTone(990,0.28,'sine',0.12,0.22);
+  playTone(440,0.18,'sine',0.11); playTone(660,0.25,'sine',0.08,0.14); playTone(880,0.35,'sine',0.05,0.28);
 }
-function playIntelTone() { playTone(620,0.14,'triangle',0.2); playTone(930,0.2,'sine',0.16,0.1); }
-function playSilenceTone() {
-  playTone(180,0.45,'sine',0.06);
-  playTone(140,0.55,'triangle',0.05,0.14);
-}
+function playIntelTone() { playTone(523,0.13,'sine',0.14); playTone(659,0.18,'sine',0.11,0.11); }
+function playSilenceTone() { playTone(220,0.75,'sine',0.035); }
 function playLeverageTone(type) {
-  if (type==='info') {
-    playTone(460,0.09,'triangle',0.2); playTone(700,0.2,'sine',0.15,0.08);
-  } else if (type==='risk') {
-    playTone(180,0.12,'sawtooth',0.28); playTone(120,0.24,'square',0.2,0.1); playStaticBurst(0.18,0.08);
-  } else {
-    playTone(300,0.12,'triangle',0.2); playTone(520,0.16,'triangle',0.15,0.09);
-  }
+  if (type==='info') { playTone(440,0.1,'sine',0.18); playTone(550,0.18,'sine',0.13,0.1); }
+  else if (type==='risk') { playTone(150,0.14,'sawtooth',0.22); playTone(100,0.28,'square',0.14,0.11); }
+  else { playTone(330,0.11,'triangle',0.18); playTone(440,0.14,'triangle',0.13,0.1); }
 }
 function playContactDeploy(type) { playLeverageTone(type); }
 function playDossierIncoming() {
-  playStaticBurst(0.34,0.12);
-  playTone(300,0.18,'sawtooth',0.2);
-  playTone(520,0.2,'square',0.2,0.09);
-  playTone(760,0.26,'triangle',0.16,0.18);
+  playStaticBurst(0.32,0.12);
+  playTone(260,0.16,'sawtooth',0.18);
+  playTone(520,0.2,'square',0.17,0.08);
+  playTone(760,0.24,'triangle',0.13,0.17);
 }
 function playDossierTransfer() {
-  playTone(980,0.08,'triangle',0.17);
-  playTone(700,0.13,'triangle',0.14,0.06);
-  playTone(420,0.2,'sine',0.12,0.12);
-}
-function playPanelToggle(isOpen) {
-  if (isOpen) {
-    playTone(520,0.08,'triangle',0.11);
-    playTone(700,0.1,'sine',0.09,0.05);
-  } else {
-    playTone(420,0.08,'triangle',0.1);
-    playTone(320,0.1,'sine',0.08,0.05);
-  }
+  playTone(980,0.08,'triangle',0.14);
+  playTone(700,0.11,'triangle',0.12,0.05);
+  playTone(420,0.18,'sine',0.1,0.1);
 }
 function playLeverageResult(effect='partial') {
-  if (effect==='strong') {
-    playTone(620,0.12,'triangle',0.2); playTone(920,0.2,'sine',0.16,0.08);
-  } else if (effect==='backfire' || effect==='none') {
-    playTone(210,0.13,'square',0.2); playTone(160,0.22,'sawtooth',0.15,0.08);
-  } else {
-    playTone(430,0.1,'triangle',0.12); playTone(560,0.15,'sine',0.1,0.08);
-  }
+  if (effect==='strong') { playTone(620,0.12,'triangle',0.2); playTone(920,0.19,'sine',0.16,0.07); }
+  else if (effect==='backfire' || effect==='none') { playTone(210,0.13,'square',0.2); playTone(160,0.22,'sawtooth',0.15,0.08); }
+  else { playTone(430,0.1,'triangle',0.12); playTone(560,0.14,'sine',0.1,0.07); }
 }
 function playSuccessFanfare() {
   playTone(520,0.1,'triangle',0.2);
-  playTone(780,0.14,'triangle',0.17,0.08);
-  playTone(1040,0.18,'sine',0.14,0.16);
+  playTone(780,0.14,'triangle',0.16,0.08);
+  playTone(1040,0.18,'sine',0.13,0.16);
 }
 function playFailureSting() {
-  playTone(210,0.2,'sawtooth',0.24);
-  playTone(140,0.32,'square',0.18,0.06);
+  playTone(210,0.18,'sawtooth',0.2);
+  playTone(140,0.3,'square',0.16,0.06);
 }
-function playClockWarning() {
-  playTone(1040,0.05,'square',0.12);
-}
+function playClockWarning() { playTone(1040,0.05,'square',0.1); }
 function playTargetVoice(mood) {
   try {
     if (!mood) return; const m = mood.toLowerCase();
@@ -1309,14 +1282,12 @@ function openContacts() {
   if (state.contactsOpen) return;
   state.contactsOpen = true;
   document.getElementById('contacts-tab').classList.remove('closed');
-  playPanelToggle(true);
   applyMainContentOffset();
 }
 function closeContacts() {
   if (state.contactsPinned) return;
   state.contactsOpen = false;
   document.getElementById('contacts-tab').classList.add('closed');
-  playPanelToggle(false);
   applyMainContentOffset();
 }
 function toggleContacts() { state.contactsOpen ? closeContacts() : openContacts(); }
@@ -1332,14 +1303,12 @@ function openDossier() {
   if (state.dossierOpen) return;
   state.dossierOpen = true;
   document.getElementById('dossier-tab').classList.remove('closed');
-  playPanelToggle(true);
   applyMainContentOffset();
 }
 function closeDossier() {
   if (state.dossierPinned) return;
   state.dossierOpen = false;
   document.getElementById('dossier-tab').classList.add('closed');
-  playPanelToggle(false);
   applyMainContentOffset();
 }
 function toggleDossier() { state.dossierOpen ? closeDossier() : openDossier(); }
@@ -1590,7 +1559,7 @@ function renderOptimalZone(){
 ═══════════════════════════════════════════ */
 function startCountdown(seconds=300){
   state.countdown=seconds; const b=document.getElementById('countdown-badge'); if(b)b.style.display='';
-  lastClockWarnSecond = null;
+  lastClockWarnSecond=null;
   updateCountdownDisplay();
   state.countdownInterval=setInterval(()=>{state.countdown--;updateCountdownDisplay();if(state.countdown<=0){clearInterval(state.countdownInterval);triggerTimeOut();}},1000);
 }
@@ -1601,7 +1570,7 @@ function updateCountdownDisplay(){
   const m=Math.floor(state.countdown/60),s=state.countdown%60;
   b.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   b.classList.toggle('urgent',state.countdown<=30);
-  if (state.countdown<=30 && state.countdown%5===0 && state.countdown!==lastClockWarnSecond){
+  if(state.countdown<=30&&state.countdown%5===0&&state.countdown!==lastClockWarnSecond){
     lastClockWarnSecond=state.countdown; playClockWarning();
   }
 }
