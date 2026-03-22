@@ -2168,9 +2168,7 @@ function buildRandomTargetProfile(){
     religion:weightedPick(TARGET_POOLS.religions),
     stressResponse:pickRandom(TARGET_POOLS.behaviorAxes.stressResponses),
     trustBuilder:pickRandom(TARGET_POOLS.behaviorAxes.trustBuilders),
-    triggerPoint:pickRandom(TARGET_POOLS.behaviorAxes.triggerPoints),
-    preferredTactic:pickRandom(TARGET_POOLS.behaviorAxes.preferredTactics),
-    resistedTactic:pickRandom(TARGET_POOLS.behaviorAxes.resistedTactics)
+    triggerPoint:pickRandom(TARGET_POOLS.behaviorAxes.triggerPoints)
   };
 }
 
@@ -2200,8 +2198,6 @@ Country of origin: ${seededProfile.countryOfOrigin}
 Location: ${seededProfile.location}
 Religion: ${seededProfile.religion}
 Behavioral stress response: ${seededProfile.stressResponse}
-Most effective approach: ${seededProfile.preferredTactic}
-Least effective approach: ${seededProfile.resistedTactic}
 Trust builder: ${seededProfile.trustBuilder}
 Trigger point: ${seededProfile.triggerPoint}
 Do not change any fixed profile value.
@@ -2251,8 +2247,9 @@ Taboo element to incorporate: "${tabooHook}".`
   data.location = seededProfile.location;
   data.religion = seededProfile.religion;
   data.behaviorModel = {
-    stressResponse:seededProfile.stressResponse, trustBuilder:seededProfile.trustBuilder,
-    triggerPoint:seededProfile.triggerPoint, preferredTactic:seededProfile.preferredTactic, resistedTactic:seededProfile.resistedTactic
+    stressResponse:seededProfile.stressResponse,
+    trustBuilder:seededProfile.trustBuilder,
+    triggerPoint:seededProfile.triggerPoint
   };
   data.profileNotes = data.profileNotes || `Noted stress pattern: ${seededProfile.stressResponse}. Trigger point: ${seededProfile.triggerPoint}.`;
   data.hiddenClue = `${data.hiddenClue} (Flagged taboo vector: ${tabooHook}.)`;
@@ -2349,7 +2346,7 @@ Behavior model: ${JSON.stringify(d.behaviorModel||{})}
 Profile notes: ${d.profileNotes||""}
 Hidden vulnerability/sin: ${d.hiddenClue}
 Mission goal: ${d.goal}
-Behavior model: stress=${d.behaviorModel?.stressResponse}; trust builder=${d.behaviorModel?.trustBuilder}; trigger=${d.behaviorModel?.triggerPoint}; preferred=${d.behaviorModel?.preferredTactic}; resisted=${d.behaviorModel?.resistedTactic}
+Behavior model: stress=${d.behaviorModel?.stressResponse}; trust builder=${d.behaviorModel?.trustBuilder}; trigger=${d.behaviorModel?.triggerPoint}
 Setting: ${d.environment||'private meeting'}
 State — progress:${state.progress}%, trust:${state.trust}%, suspicion:${state.suspicion}%, pressure:${state.pressure}%
 Optimal pressure zone: ${state.pressureOptLow}%–${state.pressureOptHigh}%
